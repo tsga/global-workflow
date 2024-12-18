@@ -28,6 +28,7 @@ cd "${DATA}" || exit 99
 
 # Dependent Scripts and Executables
 CYCLESH=${CYCLESH:-${USHgfs}/global_cycle.sh}
+REGRIDSH=${REGRIDSH:-${USHgfs}/regrid_gsiSfcIncr_to_tile.sh}
 export CYCLEXEC=${CYCLEXEC:-${EXECgfs}/global_cycle}
 NTHREADS_CYCLE=${NTHREADS_CYCLE:-24}
 APRUN_CYCLE=${APRUN_CYCLE:-${APRUN:-""}}
@@ -37,6 +38,10 @@ export SNOW_NUDGE_COEFF=${SNOW_NUDGE_COEFF:-'-2.'}
 export CYCLVARS=${CYCLVARS:-""}
 export FHOUR=${FHOUR:-0}
 export DELTSFC=${DELTSFC:-6}
+
+# Land DA options 
+export GSI_SOILANAL=${GSI_SOILANAL:-"NO"}
+export DO_JEDISNOWDA=${DO_JEDISNOWDA:-"NO"}
 
 # Other info used in this script
 RUN_GETGES=${RUN_GETGES:-"NO"}
@@ -117,12 +122,41 @@ if [[ "${DOIAU:-}" == "YES" ]]; then  # Update surface restarts at beginning of 
   gcycle_dates+=("${BDATE}")
 fi
 
+# if doing GSI soil anaysis, copy increment file and re-grid it to native model resolution
+if [ $GSI_SOILANAL = "YES" ]; then
+ 
+    export COM_SOIL_ANALYSIS_MEM=${COM_ATMOS_ENKF_ANALYSIS_STAT}
+    export COM_ATMOS_ANALYSIS_MEM=${COMIN_ATMOS_ANALYSIS} 
+    export CASE_IN=${CASE_ENS}
+    export CASE_OUT=$CASE
+    export OCNRES_OUT=$OCNRES
+    # CSD-TG currently regrids every 3 hours. refine?
+    export soilinc_fhrs=$(echo $IAUFHRS_ENKF | sed 's/,/ /g')
+ 
+    $REGRIDSH
+
+fi
+
 # Loop over the dates in the window to update the surface restarts
+FHR=6
 for gcycle_date in "${gcycle_dates[@]}"; do
 
   echo "Updating surface restarts for ${gcycle_date} ..."
 
   datestr="${gcycle_date:0:8}.${gcycle_date:8:2}0000"
+
+  # THIS BLOCK SPECIFIC TO NON-IAU CASE
+  if [[ ${GSI_SOILANAL} = "YES" ]]; then
+        # first time uses 6 hour forecast (middle of window) 
+        # next cycle uses 3 hour foreast (start of window) 
+        # ???????????????
+        # CSD-TG check have correct timing, then code properly
+        for (( nn=1; nn <= ntiles; nn++ )); do
+        cp "${COMIN_ATMOS_ANALYSIS}/sfci00${FHR}.tile${nn}.nc" \
+           "${DATA}/soil_xainc.00${nn}" 
+        done
+        FHR=3 
+  fi
 
   # Copy inputs from COMIN to DATA
   for (( nn=1; nn <= ntiles; nn++ )); do

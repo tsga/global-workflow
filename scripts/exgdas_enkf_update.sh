@@ -254,6 +254,12 @@ for FHR in $nfhrs; do
       ${NLN} "${COM_ATMOS_HISTORY_STAT_PREV}/${GPREFIX}sfcf00${FHR}.ensmean.nc" \
          "sfgsfc_${PDY}${cyc}_fhr0${FHR}_ensmean"
    fi
+   if [ $GSI_SOILANAL = "YES" ]; then
+      ${NLN} "${COM_ATMOS_HISTORY_STAT_PREV}/${GPREFIX}sfcf00${FHR}.ensmean.nc" \
+         "bfg_${PDY}${cyc}_fhr0${FHR}_ensmean"
+      ${NLN} "${COM_ATMOS_ANALYSIS_STAT}/${APREFIX}sfci00${FHR}.nc" \
+         "sfcincr_${PDY}${cyc}_fhr0${FHR}_ensmean"
+   fi
 done
 
 if [[ $USE_CFP = "YES" ]]; then
