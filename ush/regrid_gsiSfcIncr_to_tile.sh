@@ -5,7 +5,6 @@ source "${USHgfs}/preamble.sh"
 #-------------------------------------------------------------------------------------------------
 # Script to regrid surface increment from GSI grid 
 # to fv3 tiles. 
-# Requires CASE_OUT,OCNRES_OUT, CSD to be set in calling script
 # Clara Draper, Dec 2024
 #-------------------------------------------------------------------------------------------------
 
@@ -65,11 +64,6 @@ cat << EOF > regrid.nml
  /
 EOF
 
-#CSD
-#add a check into regrdding code that inputs have correct dimensions
-#add checking that all required inputs are added
-#change to read in pre-calculated grid
-
 # fixed input files
 ln -sf /scratch2/BMC/gsienkf/Clara.Draper/regridding/inputs/gaussian.${LONB_CASE_IN}.${LATB_CASE_IN}.nc gaussian_scrip.nc
 
@@ -91,13 +85,13 @@ for imem in $(seq 1 $NMEM_REGRID); do
     fi
  
     for FHR in $soilinc_fhrs; do
-      ln -fs ${COM_SOIL_ANALYSIS_MEM}/${APREFIX_ENS}sfci00${FHR}.nc \
+      ln -fs ${COM_SOIL_ANALYSIS_MEM}/${APREFIX_ENS}sfci0${FHR}.nc \
                 ${DATA}/enkfgdas.sfci.nc
 
       $APRUN_REGR $REGRID_EXEC $REDOUT$PGMOUT $REDERR$PGMERR
 
       for n in $(seq 1 $ntiles); do
-          mv ${DATA}/sfci.tile${n}.nc  ${COM_ATMOS_ANALYSIS_MEM}/sfci00${FHR}.tile${n}.nc 
+          mv ${DATA}/sfci.tile${n}.nc  ${COM_ATMOS_ANALYSIS_MEM}/sfci0${FHR}.tile${n}.nc 
       done
     done
 done

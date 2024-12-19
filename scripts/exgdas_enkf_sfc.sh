@@ -123,7 +123,7 @@ if [ $GSI_SOILANAL = "YES" ]; then
     export CASE_IN=${CASE_ENS}
     export CASE_OUT=${CASE_ENS}
     export OCNRES_OUT=${OCNRES}
-    export soilinc_fhrs="6"
+    export soilinc_fhrs="06"
     export NMEM_REGRID=${NMEM_ENS}
 
     $REGRIDSH
@@ -148,7 +148,6 @@ if [ $DOIAU = "YES" ]; then
             if (( smem > NMEM_ENS_MAX )); then
                smem=$((smem - NMEM_ENS_MAX))
             fi
-            # CSD - what is this doing?
             gmemchar="mem"$(printf %03i "$smem")
             cmem=$(printf %03i $imem)
             memchar="mem$cmem"

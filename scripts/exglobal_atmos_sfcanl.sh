@@ -116,8 +116,11 @@ fi
 
 # Collect the dates in the window to update surface restarts
 gcycle_dates=("${PDY}${cyc}")  # Always update surface restarts at middle of window
+soilinc_fhrs=("06") # increment file at middle of window has FHR=6
 if [[ "${DOIAU:-}" == "YES" ]]; then  # Update surface restarts at beginning of window
   half_window=$(( assim_freq / 2 ))
+  half_fhrs=$(printf %02d $half_window)
+  soilinc_fhrs+=("$half_fhrs")
   BDATE=$(date --utc -d "${PDY} ${cyc} - ${half_window} hours" +%Y%m%d%H)
   gcycle_dates+=("${BDATE}")
 fi
@@ -130,16 +133,17 @@ if [ $GSI_SOILANAL = "YES" ]; then
     export CASE_IN=${CASE_ENS}
     export CASE_OUT=$CASE
     export OCNRES_OUT=$OCNRES
-    # CSD-TG currently regrids every 3 hours. refine?
-    export soilinc_fhrs=$(echo $IAUFHRS_ENKF | sed 's/,/ /g')
  
     $REGRIDSH
 
 fi
 
 # Loop over the dates in the window to update the surface restarts
-FHR=6
-for gcycle_date in "${gcycle_dates[@]}"; do
+for hr in "${!gcycle_dates[@]}"; do
+
+  gcycle_date=${gcycle_dates[hr]}
+  FHR=${FHR[hr]}
+  echo "CSD check hours $FHR"
 
   echo "Updating surface restarts for ${gcycle_date} ..."
 
@@ -147,15 +151,10 @@ for gcycle_date in "${gcycle_dates[@]}"; do
 
   # THIS BLOCK SPECIFIC TO NON-IAU CASE
   if [[ ${GSI_SOILANAL} = "YES" ]]; then
-        # first time uses 6 hour forecast (middle of window) 
-        # next cycle uses 3 hour foreast (start of window) 
-        # ???????????????
-        # CSD-TG check have correct timing, then code properly
         for (( nn=1; nn <= ntiles; nn++ )); do
         cp "${COMIN_ATMOS_ANALYSIS}/sfci00${FHR}.tile${nn}.nc" \
            "${DATA}/soil_xainc.00${nn}" 
         done
-        FHR=3 
   fi
 
   # Copy inputs from COMIN to DATA
