@@ -92,6 +92,7 @@ else
 fi
 INCREMENTS_TO_ZERO=${INCREMENTS_TO_ZERO:-"'NONE'"}
 GSI_SOILANAL=${GSI_SOILANAL:-"NO"}
+LAND_IAU_INC0_DIR=${LAND_IAU_INC0_DIR:-${ROTDIR}/INC0}
 
 ################################################################################
 
@@ -243,7 +244,20 @@ for imem in $(seq 1 $NMEM_ENS); do
            "sfcincr_${PDY}${cyc}_fhr0${FHR}_${memchar}"
       fi
    done
+   if [[ $GSI_SOILANAL = "YES" && ${DO_LAND_IAU} = "YES" ]]; then
+       for TN in $(seq 6); do
+          ${NCP} "${LAND_IAU_INC0_DIR}/sfc_inc.tile${TN}.nc"         \
+          "${COM_ATMOS_ANALYSIS_MEM}/sfc_inc.tile${TN}.nc"
+
+          ${NLN} "${COM_ATMOS_ANALYSIS_MEM}/sfc_inc.tile${TN}.nc" \
+           "sfc_inc_${PDY}${cyc}_${memchar}_tile${TN}"
+       done
+   fi
 done
+
+if [[ $GSI_SOILANAL = "YES" && ${DO_LAND_IAU} = "YES" ]]; then
+    ${NCP} "${LAND_IAU_WGT_FILE_DIR}/${LAND_IAU_WGT_FILE}" "./${LAND_IAU_WGT_FILE}"
+fi
 
 # Ensemble mean guess
 for FHR in $nfhrs; do
@@ -253,6 +267,12 @@ for FHR in $nfhrs; do
    if [ $cnvw_option = ".true." ]; then
       ${NLN} "${COM_ATMOS_HISTORY_STAT_PREV}/${GPREFIX}sfcf00${FHR}.ensmean.nc" \
          "sfgsfc_${PDY}${cyc}_fhr0${FHR}_ensmean"
+   fi
+   if [ $GSI_SOILANAL = "YES" ]; then
+      ${NLN} "${COM_ATMOS_HISTORY_STAT_PREV}/${GPREFIX}sfcf00${FHR}.ensmean.nc" \
+         "bfg_${PDY}${cyc}_fhr0${FHR}_ensmean"
+      ${NLN} "${COM_ATMOS_ANALYSIS_STAT}/${APREFIX}sfci00${FHR}.nc" \
+         "sfcincr_${PDY}${cyc}_fhr0${FHR}_ensmean"
    fi
 done
 
@@ -410,6 +430,159 @@ export pgm=$ENKFEXEC
 $NCP $ENKFEXEC $DATA
 $APRUN_ENKF ${DATA}/$(basename $ENKFEXEC) 1>stdout 2>stderr
 export err=$?; err_chk
+
+################################################################################
+# regrid sfc increments 
+
+if [[ "$GSI_SOILANAL" = "YES" && "${DO_LAND_IAU}" = "YES" ]]; then
+
+# TZG regridding with pre-generated ESMF weight files
+# create fort.3600 namelist for sfc_inc Gaussian to FV3
+cat > fort.3600 << EOF
+&naminc
+ weight_file=${LAND_IAU_WGT_FILE}
+ gaussian_sfc_inc_prefix="sfcincr_${PDY}${cyc}_fhr"
+ fv3_sfc_inc_prefix="sfc_inc_${PDY}${cyc}_mem"
+ ens_size=$NMEM_ENS
+
+/
+EOF
+
+  #TZG: Gaussian to FV3 using pre-generated ESMF weights
+  LAND_INC_GtoFV3_EXE=${LAND_INC_GtoFV3_EXE:-${EXECgfs}/inctofv3.exe}
+  $NCP ${LAND_INC_GtoFV3_EXE} $DATA
+  #TODO move to the appropriate spot (HERA.env?)
+  export APRUN_GtoFV3="srun -l --export=ALL -n 40"
+  ${APRUN_GtoFV3} ${DATA}/$(basename ${LAND_INC_GtoFV3_EXE}) 1>errlog_sfcinc 2>&1
+  #TODO what is the approprite error handling here?
+  # export err=$?; err_chk
+
+## Clara's regridding code with ESMF on the fly 
+
+  LAND_INC_GtoFV3_EXE=${EXECgfs}/regridStates.x
+  $NCP ${LAND_INC_GtoFV3_EXE} $DATA
+  # environment and modules for compiling / running executables using GDASApp
+  # selected lines, taken from GDASApp/build.sh
+  export GDASApp_root=/scratch1/NCEPDEV/da/Tseganeh.Gichamo/global-workflow/sorc/
+  
+  # ensure div by 6 for n tasks
+  ntasks_in=${ntasks_enkf:-${ntasks}}
+  ntdiv6=$((ntasks_in/6))
+  ntasks_inc=$((ntdiv6*6))
+
+  export APRUN_GtoFV3="srun -l --export=ALL -n ${ntasks_inc} "
+  
+  lndnfhrs=$(echo ${LAND_IAU_FHRS} | sed 's/,/ /g') 
+
+  # environment for GDASApp
+  module purge
+  module use ${GDASApp_root}/gdas.cd/modulefiles
+  module load GDAS/hera.intel
+  module list
+
+  NMEM_ENS_1=$((NMEM_ENS+1))
+  #CASE="C96"
+  #CASE_ENS="C48"
+  RES="${CASE:1}"
+  RES_ENS="${CASE_ENS:1}"
+  OCNRES=${OCNRES:-500}
+  RES_IN=${RES_ENS}
+  RES_OUT=${RES_ENS}
+
+  n_vars=$((LSOIL_INCR*2))
+
+  var_list_in=""
+  #var_list_in="soilt1_inc","slc1_inc","","","","","","","","",
+  for vi in $( seq 1 ${LSOIL_INCR} ); do
+      var_list_in=${var_list_in}'"soilt'${vi}'_inc"',   #TODO: prob don't need quote marks around
+  done
+  for vi in $( seq 1 ${LSOIL_INCR} ); do
+      var_list_in=${var_list_in}'"slc'${vi}'_inc"',
+  done
+
+  # in_file_name='"enkfgdas.t18z.sfci006.nc"'   
+  # out_file_name='"sfc_inc"'
+
+  #COM_ATMOS_ANALYSIS_MEM_OUT=COM_ATMOS_ANALYSIS_MEM
+
+  for imem in $(seq 1 $NMEM_ENS_1); do
+	    
+    if [[ "$imem" -lt "$NMEM_ENS_1" ]]; then
+
+        memchar="mem"$(printf %03i $imem)
+        RES_OUT=${RES_ENS}
+        MEMDIR=${memchar} YMD=${PDY} HH=${cyc} declare_from_tmpl -x \
+          COM_ATMOS_ANALYSIS_MEM_OUT:COM_ATMOS_ANALYSIS_TMPL
+
+    else  # Ensemble mean increment
+        memchar="ensmean"
+	RES_OUT=$RES
+	COM_ATMOS_ANALYSIS_MEM_OUT=${COM_ATMOS_ANALYSIS_STAT}
+    fi 
+
+    echo "ens mem $memchar"
+
+    for FHR in $lndnfhrs; do
+ 
+      echo "fhrs $FHR"
+
+      # ${NLN} "${COM_ATMOS_ANALYSIS_MEM}/sfc_inc.tile${TN}.nc" \
+      # ${NLN} "${COM_ATMOS_ANALYSIS_STAT}/${APREFIX}sfci00${FHR}.nc" \
+      in_file_name="sfcincr_${PDY}${cyc}_fhr0${FHR}_${memchar}"
+
+      out_file_name="sfc_inc_${PDY}${cyc}_fhr0${FHR}_${memchar}"   #_${memchar}_tile${TN}"
+
+      rm -f regrid.nml
+
+cat > regrid.nml << EOF
+&config
+ n_vars=${n_vars},
+ variable_list=${var_list_in}
+ missing_value=0.,
+/
+
+&input
+ gridtype="gau_inc",
+ ires=$LONA_ENKF,
+ jres=$LATA_ENKF,
+ fname=${in_file_name},
+ dir="./",
+ fname_coord="gaussian.${LONA_ENKF}.${LATA_ENKF}.nc",
+ dir_coord="/scratch1/NCEPDEV/da/Tseganeh.Gichamo/STATIC/C${RES_IN}/"
+!global-workflow/fix/orog/C${RES_IN}/"
+/
+
+&output
+ gridtype="fv3_rst",
+ ires=${RES_OUT},
+ jres=${RES_OUT},
+ fname=${out_file_name},
+ dir="./",
+ fname_mask="C${RES_OUT}.mx${OCNRES}.vegetation_type",
+ dir_mask="/scratch1/NCEPDEV/da/Tseganeh.Gichamo/global-workflow/fix/orog/C${RES_OUT}/sfc/",
+ dir_coord="/scratch1/NCEPDEV/da/Tseganeh.Gichamo/global-workflow/fix/orog/", 
+!C${RES_OUT}/",
+/
+EOF
+
+      ${APRUN_GtoFV3} ${LAND_INC_GtoFV3_EXE} 1>errlog_sfcinc_fhr0${FHR}_${memchar} 2>&1
+      # TODO what is the approprite error handling here?
+      # export err=$?; err_chk
+
+      for TN in $(seq 6); do
+        ${NCP} "${out_file_name}.tile${TN}.nc"  "${COM_ATMOS_ANALYSIS_MEM_OUT}/land_xainc_fhr0${FHR}.tile${TN}.nc"     
+      done
+      # Cat runtime output files.
+      cat errlog_sfcinc_fhr0${FHR}_${memchar} > "${COM_ATMOS_ANALYSIS_STAT}/${ENKFSTAT}"
+
+    done  # Fhrs
+
+  done  # imem 
+  # Cat runtime output files.
+  cat errlog_sfcinc > "${COM_ATMOS_ANALYSIS_STAT}/${ENKFSTAT}"
+fi
+
+################################################################################
 
 # Cat runtime output files.
 cat stdout stderr > "${COM_ATMOS_ANALYSIS_STAT}/${ENKFSTAT}"

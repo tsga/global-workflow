@@ -91,4 +91,11 @@ if [[ ${RUN} == "enkfgfs" ]]; then
     export restart_interval=${restart_interval_enkfgfs:-12}
 fi
 
+# do sfc temp increments as IAU for enkf fcst
+export DO_LAND_IAU="YES"
+# no land iau if cycle is cold start or in free-forecast mode
+if [[ "${MODE}" = "cycled" && "${SDATE}" = "${PDY}${cyc}" && ${EXP_WARM_START} = ".false." ]] || [[ "${MODE}" = "forecast-only" && ${EXP_WARM_START} = ".false." ]] ; then
+  export DO_LAND_IAU="NO"   #TODO: Note we don't do Land IAU at all instead of limiting to LAND_IAU_FHRS=6. Test in future using LAND_IAU_FHRS=6 (to make all land DA in one place)
+fi
+
 echo "END: config.efcs"

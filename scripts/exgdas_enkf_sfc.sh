@@ -65,6 +65,8 @@ export CYCLVARS=${CYCLVARS:-"FSNOL=-2.,FSNOS=99999.,"}
 export FHOUR=${FHOUR:-0}
 export DELTSFC=${DELTSFC:-6}
 
+REGRIDSH=${REGRIDSH:-${USHgfs}/regrid_gsiSfcIncr_to_tile.sh}
+
 APRUN_ESFC=${APRUN_ESFC:-${APRUN:-""}}
 NTHREADS_ESFC=${NTHREADS_ESFC:-${NTHREADS:-1}}
 
@@ -115,6 +117,19 @@ else
     export NST_FILE="NULL"
 fi
 
+# regrid the surface increment files
+if [[ $GSI_SOILANAL = "YES" && $DO_LAND_IAU = "NO" ]]; then
+
+    export CASE_IN=${CASE_ENS}
+    export CASE_OUT=${CASE_ENS}
+    export OCNRES_OUT=${OCNRES}
+    export soilinc_fhrs="6"
+    export NMEM_REGRID=${NMEM_ENS}
+
+    $REGRIDSH
+
+fi
+
 export APRUNCY=${APRUN_CYCLE:-$APRUN_ESFC}
 export OMP_NUM_THREADS_CY=${NTHREADS_CYCLE:-$NTHREADS_ESFC}
 export MAX_TASKS_CY=$NMEM_ENS
@@ -133,6 +148,7 @@ if [ $DOIAU = "YES" ]; then
             if (( smem > NMEM_ENS_MAX )); then
                smem=$((smem - NMEM_ENS_MAX))
             fi
+	    # CSD - what is this doing?
             gmemchar="mem"$(printf %03i "$smem")
             cmem=$(printf %03i $imem)
             memchar="mem$cmem"
@@ -165,8 +181,10 @@ if [ $DOIAU = "YES" ]; then
 
             if [[ ${GSI_SOILANAL} = "YES" ]]; then
                 FHR=6
-                ${NCP} "${COM_ATMOS_ANALYSIS_MEM}/${APREFIX_ENS}sfci00${FHR}.nc" \
-                   "${DATA}/lnd_incr.${cmem}"
+            #    ${NCP} "${COM_ATMOS_ANALYSIS_MEM}/${APREFIX_ENS}sfci00${FHR}.nc" \
+            #       "${DATA}/lnd_incr.${cmem}"
+	    	${NCP} "${COM_ATMOS_ANALYSIS_MEM}/sfci00${FHR}.tile${n}.nc" \
+                   "${DATA}/soil_xainc.${cmem}"
             fi
         done # ensembles
 
@@ -192,11 +210,12 @@ if [ $DOIAU = "YES" ]; then
             [[ ${TILE_NUM} -eq 1 ]] && mkdir -p "${COM_ATMOS_RESTART_MEM}"
             cpfs "${DATA}/fnbgso.${cmem}" "${COM_ATMOS_RESTART_MEM}/${bPDY}.${bcyc}0000.sfcanl_data.tile${n}.nc"
 
-
+#TZG do we need this?
             if [[ ${GSI_SOILANAL} = "YES" ]]; then
                 FHR=6
                 ${NCP} "${COM_ATMOS_ANALYSIS_MEM}/${APREFIX_ENS}sfci00${FHR}.nc" \
-                   "${DATA}/lnd_incr.${cmem}"
+            #       "${DATA}/lnd_incr.${cmem}"
+	           "${DATA}/sfcincr_gsi.${cmem}"
             fi
         done # ensembles
 
