@@ -148,6 +148,7 @@ if [ $DOIAU = "YES" ]; then
             if (( smem > NMEM_ENS_MAX )); then
                smem=$((smem - NMEM_ENS_MAX))
             fi
+	    # CSD - what is this doing?
             gmemchar="mem"$(printf %03i "$smem")
             cmem=$(printf %03i $imem)
             memchar="mem$cmem"
@@ -208,7 +209,7 @@ if [ $DOIAU = "YES" ]; then
             [[ ${TILE_NUM} -eq 1 ]] && mkdir -p "${COM_ATMOS_RESTART_MEM}"
             cpfs "${DATA}/fnbgso.${cmem}" "${COM_ATMOS_RESTART_MEM}/${bPDY}.${bcyc}0000.sfcanl_data.tile${n}.nc"
 
-
+#TZG do we need this?
             if [[ ${GSI_SOILANAL} = "YES" ]]; then
                 FHR=6
                 ${NCP} "${COM_ATMOS_ANALYSIS_MEM}/${APREFIX_ENS}sfci00${FHR}.nc" \
