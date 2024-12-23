@@ -123,8 +123,20 @@ if [ $GSI_SOILANAL = "YES" ]; then
     export CASE_IN=${CASE_ENS}
     export CASE_OUT=${CASE_ENS}
     export OCNRES_OUT=${OCNRES}
-    export soilinc_fhrs="06"
     export NMEM_REGRID=${NMEM_ENS}
+
+    if [ $DO_LAND_IAU = "YES" ]
+        soilinc_fhrs=()
+        landifhrs=$(echo ${LAND_IAU_FHRS} | sed 's/,/ /g')
+        for ihr in $landifhrs; do
+            hrstr=$(printf "%02d" $ihr);
+            soilinc_fhrs+=("$hrstr")
+        done
+    else
+        soilinc_fhrs=("06")
+    fi
+
+    export soilinc_fhrs
 
     $REGRIDSH
 
@@ -134,6 +146,7 @@ export APRUNCY=${APRUN_CYCLE:-$APRUN_ESFC}
 export OMP_NUM_THREADS_CY=${NTHREADS_CYCLE:-$NTHREADS_ESFC}
 export MAX_TASKS_CY=$NMEM_ENS
 
+# ToDO TZG update this to sync with land_iau
 if [ $DOIAU = "YES" ]; then
     # Update surface restarts at beginning of window when IAU is ON
     # For now assume/hold dtfanl.nc is valid at beginning of window.
@@ -181,6 +194,7 @@ if [ $DOIAU = "YES" ]; then
 
             if [[ ${GSI_SOILANAL} = "YES" ]]; then
                 FHR=6
+#if [ $DO_LAND_IAU = "YES" ] TODO: make sure iau updated vars are not updated again
                  ${NCP} "${COM_ATMOS_ANALYSIS_MEM}/sfci00${FHR}.tile${n}.nc" \
                    "${DATA}/soil_xainc.${cmem}" 
             fi
@@ -209,7 +223,6 @@ if [ $DOIAU = "YES" ]; then
             [[ ${TILE_NUM} -eq 1 ]] && mkdir -p "${COM_ATMOS_RESTART_MEM}"
             cpfs "${DATA}/fnbgso.${cmem}" "${COM_ATMOS_RESTART_MEM}/${bPDY}.${bcyc}0000.sfcanl_data.tile${n}.nc"
 
-#TZG do we need this?
             if [[ ${GSI_SOILANAL} = "YES" ]]; then
                 FHR=6
                 ${NCP} "${COM_ATMOS_ANALYSIS_MEM}/${APREFIX_ENS}sfci00${FHR}.nc" \

@@ -33,26 +33,47 @@ ntiles=6
 APREFIX="${RUN/enkf}.t${cyc}z."
 APREFIX_ENS="enkfgdas.t${cyc}z."
 
-cat << EOF > regrid.nml
- &config
-  n_vars=4,
-  variable_list(1)="soilt1_inc     ",
-  variable_list(2)="soilt2_inc     ",
-  variable_list(3)="slc1_inc     ",
-  variable_list(4)="slc2_inc     ",
-  missing_value=0.,
- /
- &input
+n_vars=$((LSOIL_INCR*2))
+
+# TODO: input this through config?
+var_list_in=""
+#var_list_in="soilt1_inc","slc1_inc","","","","","","","","",
+for vi in $( seq 1 ${LSOIL_INCR} ); do
+    var_list_in=${var_list_in}'"soilt'${vi}'_inc"',   #TODO: prob don't need quote marks around
+done
+for vi in $( seq 1 ${LSOIL_INCR} ); do
+    var_list_in=${var_list_in}'"slc'${vi}'_inc"',
+done
+
+# fixed input files
+# TODO: copy this to fix dir for all res?
+ln -sf /scratch2/BMC/gsienkf/Clara.Draper/regridding/inputs/gaussian.${LONB_CASE_IN}.${LATB_CASE_IN}.nc gaussian_scrip.nc
+
+# fixed output files
+for n in $(seq 1 $ntiles); do
+    ln -sf ${FIXorog}/${CASE_OUT}/sfc/${CASE_OUT}.mx${OCNRES_OUT}.vegetation_type.tile${n}.nc  vegetation_type.tile${n}.nc
+done
+
+rm -f regrid.nml
+
+cat > regrid.nml << EOF
+&config
+ n_vars=${n_vars},
+ variable_list=${var_list_in}
+ missing_value=0.,
+/
+
+&input
   gridtype="gau_inc",
   ires=${LONB_CASE_IN},
   jres=${LATB_CASE_IN},
-  fname="enkfgdas.sfci.nc",
+  fname=enkfgdas.sfci.nc,
   dir="./",
   fname_coord="gaussian_scrip.nc",
   dir_coord="./"
 /
 
- &output
+&output
   gridtype="fv3_rst",
   ires=${CRES_OUT},
   jres=${CRES_OUT},
@@ -61,18 +82,9 @@ cat << EOF > regrid.nml
   fname_mask="vegetation_type" 
   dir_mask="./"
   dir_coord="$FIXorog",
- /
+/
 EOF
 
-# fixed input files
-ln -sf /scratch2/BMC/gsienkf/Clara.Draper/regridding/inputs/gaussian.${LONB_CASE_IN}.${LATB_CASE_IN}.nc gaussian_scrip.nc
-
-# fixed output files
-for n in $(seq 1 $ntiles); do
-    ln -sf ${FIXorog}/${CASE_OUT}/sfc/${CASE_OUT}.mx${OCNRES_OUT}.vegetation_type.tile${n}.nc  vegetation_type.tile${n}.nc
-done
-
-#nfhrs=$(echo $IAUFHRS_ENKF | sed 's/,/ /g')
 for imem in $(seq 1 $NMEM_REGRID); do
     if [[ $NMEM_REGRID > 1 ]]; then
         cmem=$(printf %03i $imem)
