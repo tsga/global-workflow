@@ -92,7 +92,6 @@ else
 fi
 INCREMENTS_TO_ZERO=${INCREMENTS_TO_ZERO:-"'NONE'"}
 GSI_SOILANAL=${GSI_SOILANAL:-"NO"}
-LAND_IAU_INC0_DIR=${LAND_IAU_INC0_DIR:-${ROTDIR}/INC0}
 
 ################################################################################
 
@@ -244,20 +243,7 @@ for imem in $(seq 1 $NMEM_ENS); do
            "sfcincr_${PDY}${cyc}_fhr0${FHR}_${memchar}"
       fi
    done
-   if [[ $GSI_SOILANAL = "YES" && ${DO_LAND_IAU} = "YES" ]]; then
-       for TN in $(seq 6); do
-          ${NCP} "${LAND_IAU_INC0_DIR}/sfc_inc.tile${TN}.nc"         \
-          "${COM_ATMOS_ANALYSIS_MEM}/sfc_inc.tile${TN}.nc"
-
-          ${NLN} "${COM_ATMOS_ANALYSIS_MEM}/sfc_inc.tile${TN}.nc" \
-           "sfc_inc_${PDY}${cyc}_${memchar}_tile${TN}"
-       done
-   fi
 done
-
-if [[ $GSI_SOILANAL = "YES" && ${DO_LAND_IAU} = "YES" ]]; then
-    ${NCP} "${LAND_IAU_WGT_FILE_DIR}/${LAND_IAU_WGT_FILE}" "./${LAND_IAU_WGT_FILE}"
-fi
 
 # Ensemble mean guess
 for FHR in $nfhrs; do
@@ -267,12 +253,6 @@ for FHR in $nfhrs; do
    if [ $cnvw_option = ".true." ]; then
       ${NLN} "${COM_ATMOS_HISTORY_STAT_PREV}/${GPREFIX}sfcf00${FHR}.ensmean.nc" \
          "sfgsfc_${PDY}${cyc}_fhr0${FHR}_ensmean"
-   fi
-   if [ $GSI_SOILANAL = "YES" ]; then
-      ${NLN} "${COM_ATMOS_HISTORY_STAT_PREV}/${GPREFIX}sfcf00${FHR}.ensmean.nc" \
-         "bfg_${PDY}${cyc}_fhr0${FHR}_ensmean"
-      ${NLN} "${COM_ATMOS_ANALYSIS_STAT}/${APREFIX}sfci00${FHR}.nc" \
-         "sfcincr_${PDY}${cyc}_fhr0${FHR}_ensmean"
    fi
 done
 
@@ -430,6 +410,9 @@ export pgm=$ENKFEXEC
 $NCP $ENKFEXEC $DATA
 $APRUN_ENKF ${DATA}/$(basename $ENKFEXEC) 1>stdout 2>stderr
 export err=$?; err_chk
+
+# Cat runtime output files.
+cat stdout stderr > "${COM_ATMOS_ANALYSIS_STAT}/${ENKFSTAT}"
 
 ################################################################################
 #  Postprocessing
