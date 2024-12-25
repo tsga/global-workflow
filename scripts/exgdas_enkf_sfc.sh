@@ -125,18 +125,18 @@ if [ $GSI_SOILANAL = "YES" ]; then
     export OCNRES_OUT=${OCNRES}
     export NMEM_REGRID=${NMEM_ENS}
 
-    if [ $DO_LAND_IAU = "YES" ]
-        soilinc_fhrs=()
-        landifhrs=$(echo ${LAND_IAU_FHRS} | sed 's/,/ /g')
-        for ihr in $landifhrs; do
+    if [ $DO_LAND_IAU = "YES" ]; then
+        soilinc_fhr=()
+	IFS=',' read -ra landifhrs <<< "${LAND_IAU_FHRS}"
+        for ihr in "${landifhrs[@]}"; do
             hrstr=$(printf "%02d" $ihr);
-            soilinc_fhrs+=("$hrstr")
+            soilinc_fhr+=("$hrstr")
         done
     else
-        soilinc_fhrs=("06")
+        soilinc_fhr=("06")
     fi
 
-    export soilinc_fhrs
+    export soilinc_fhrs=${soilinc_fhr}
 
     $REGRIDSH
 

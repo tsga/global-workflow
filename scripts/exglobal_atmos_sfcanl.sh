@@ -116,12 +116,12 @@ fi
 
 # Collect the dates in the window to update surface restarts
 gcycle_dates=("${PDY}${cyc}")  # Always update surface restarts at middle of window
-soilinc_fhrs=("06") # increment file at middle of window has FHR=6
+soilinc_fhr=("06") # increment file at middle of window has FHR=6
 # ToDO TZG update this to sync with land_iau
 if [[ "${DOIAU:-}" == "YES" ]]; then  # Update surface restarts at beginning of window
   half_window=$(( assim_freq / 2 ))
   half_fhrs=$(printf %02d $half_window)
-  soilinc_fhrs+=("$half_fhrs")
+  soilinc_fhr+=("$half_fhrs")
   BDATE=$(date --utc -d "${PDY} ${cyc} - ${half_window} hours" +%Y%m%d%H)
   gcycle_dates+=("${BDATE}")
 fi
@@ -135,16 +135,16 @@ if [ $GSI_SOILANAL = "YES" ]; then
     export CASE_OUT=$CASE
     export OCNRES_OUT=$OCNRES
 
-    if [ $DO_LAND_IAU = "YES" ]
-	soilinc_fhrs=()
-	landifhrs=$(echo ${LAND_IAU_FHRS} | sed 's/,/ /g')
-	for ihr in $landifhrs; do
-	    hrstr=$(printf "%02d" $ihr); 
-	    soilinc_fhrs+=("$hrstr")
+    if [ $DO_LAND_IAU = "YES" ]; then
+	soilinc_fhr=()
+        IFS=',' read -ra landifhrs <<< "${LAND_IAU_FHRS}"
+        for ihr in "${landifhrs[@]}"; do
+            hrstr=$(printf "%02d" $ihr);
+            soilinc_fhr+=("$hrstr")
         done
     fi
     
-    export soilinc_fhrs
+    export soilinc_fhrs=${soilinc_fhr}
 
     $REGRIDSH
 

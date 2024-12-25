@@ -218,11 +218,6 @@ EOF
 	LAND_IAU_INC_FILES="${LAND_IAU_INC_FILES},''"   #"'sfc_inc',''"
 
       #else #TODO: check to make sure correct sfc inc for non-IAU
-      #  local sfc_increment_file 
-      #  sfc_increment_file="${COMIN_ATMOS_ANALYSIS}/${RUN}.t${cyc}z.sfci006.nc"
-      #  if [[ -f ${sfc_increment_file} ]]; then
-      #    ${NLN} "${sfc_increment_file}" "${DATA}/INPUT/fv3_sfc_increment.nc"
-      #  fi
       fi
 
     fi  # if [[ "${RERUN}" == "YES" ]]; then

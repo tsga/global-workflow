@@ -13,14 +13,14 @@ export PGMERR=${PGMERR:-${pgmerr:-'&2'}}
 export REDOUT=${REDOUT:-'1>'}
 export REDERR=${REDERR:-'2>'}
 
-REGRID_EXEC=${HOMEgfs}/sorc/gdas.cd/build/bin/regridStates.x
+REGRID_EXEC=${HOMEgfs}/exec/regridStates.x
+#sorc/gdas.cd/build/bin/regridStates.x
 
 export PGM=$REGRID_EXEC
 export pgm=$PGM
 
 NMEM_REGRID=${NMEM_REGRID:-1}
 CASE_IN=${CASE_IN:-$CASE_ENS}
-
 
 # get resolutions
 CRES_IN=$(echo $CASE_IN | cut -c2-)
@@ -39,11 +39,24 @@ n_vars=$((LSOIL_INCR*2))
 var_list_in=""
 #var_list_in="soilt1_inc","slc1_inc","","","","","","","","",
 for vi in $( seq 1 ${LSOIL_INCR} ); do
-    var_list_in=${var_list_in}'"soilt'${vi}'_inc"',   #TODO: prob don't need quote marks around
+    var_list_in=${var_list_in}'"soilt'${vi}'_inc"',   
 done
 for vi in $( seq 1 ${LSOIL_INCR} ); do
     var_list_in=${var_list_in}'"slc'${vi}'_inc"',
 done
+
+# tempory fix till reg ouputs time dim
+sfiprfx="sfci00["  #"sfci00[369]"  ##only for single digit hours
+soilinc_fhr_f=""
+dlmtr=""
+IFS=',' read -ra landifhrs <<< "${LAND_IAU_FHRS}"
+for ihr in "${landifhrs[@]}"; do
+    hrsf=$(printf "%.1f" "$ihr")
+    soilinc_fhr_f="${soilinc_fhr_f}${dlmtr}${hrsf}"
+    dlmtr=","
+    sfiprfx="${sfiprfx}${ihr}"
+done
+sfiprfx="${sfiprfx}]"
 
 # fixed input files
 # TODO: copy this to fix dir for all res?
@@ -103,8 +116,21 @@ for imem in $(seq 1 $NMEM_REGRID); do
       $APRUN_REGR $REGRID_EXEC $REDOUT$PGMOUT $REDERR$PGMERR
 
       for n in $(seq 1 $ntiles); do
-          mv ${DATA}/sfci.tile${n}.nc  ${COM_ATMOS_ANALYSIS_MEM}/sfci0${FHR}.tile${n}.nc 
+          mv sfci.tile${n}.nc  sfci0${FHR}.tile${n}.nc 
       done
+    done
+    #TODO: TZG temp fix till reg ouputs time dim
+    for n in $(seq 1 $ntiles); do
+        ncecat -u time ${sfiprfx}.tile${n}.nc sfc_inc.tile${n}.nc   #sfci00[369]
+	ncap2 -A -s @all="{${soilinc_fhr_f[@]}}" sfc_inc.tile${n}.nc sfc_inc.tile${n}.nc
+	ncap2 -O -s'time[time]=@all' sfc_inc.tile${n}.nc sfc_inc.tile${n}.nc
+
+        for FHR in $soilinc_fhrs; do
+	    yes |cp -u ${DATA}/sfci0${FHR}.tile${n}.nc  ${COM_ATMOS_ANALYSIS_MEM}/sfci0${FHR}.tile${n}.nc
+	    rm -f ${DATA}/sfci0${FHR}.tile${n}.nc
+	done
+	yes |cp -u  ${DATA}/sfc_inc.tile${n}.nc  ${COM_ATMOS_ANALYSIS_MEM}/sfc_inc.tile${n}.nc
+	rm -f ${DATA}/sfc_inc.tile${n}.nc
     done
 done
 
