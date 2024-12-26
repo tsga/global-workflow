@@ -126,17 +126,28 @@ if [ $GSI_SOILANAL = "YES" ]; then
     export NMEM_REGRID=${NMEM_ENS}
 
     if [ $DO_LAND_IAU = "YES" ]; then
-        soilinc_fhr=()
-	IFS=',' read -ra landifhrs <<< "${LAND_IAU_FHRS}"
+        ifhrs=()
+        IFS=',' read -ra landifhrs <<< "${LAND_IAU_FHRS}"
         for ihr in "${landifhrs[@]}"; do
             hrstr=$(printf "%02d" $ihr);
-            soilinc_fhr+=("$hrstr")
+            ifhrs+=("$hrstr")
         done
-    else
-        soilinc_fhr=("06")
+        export landiau_fhrs="${ifhrs[@]}"
     fi
 
-    export soilinc_fhrs=${soilinc_fhr}
+    # differentiating soilinc_fhrs and fhrs for regrid
+    # all GSI incr are regridded; not all inrements are used in soil update
+
+    ifhrs=()
+    IFS=',' read -ra landifhrs <<< "${IAUFHRS_ENKF}"  #$(echo $IAUFHRS_ENKF | sed 's/,/ /g')
+    for ihr in "${landifhrs[@]}"; do
+        hrstr=$(printf "%02d" $ihr);
+        ifhrs+=("$hrstr")
+    done
+
+    export landinc_reghrs="${ifhrs[@]}"
+
+    export soilinc_fhrs=("06")
 
     $REGRIDSH
 

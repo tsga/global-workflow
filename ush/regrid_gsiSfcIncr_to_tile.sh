@@ -47,12 +47,12 @@ done
 
 # tempory fix till reg ouputs time dim
 sfiprfx="sfci00["  #"sfci00[369]"  ##only for single digit hours
-soilinc_fhr_f=""
+landinc_fhr_f=""
 dlmtr=""
 IFS=',' read -ra landifhrs <<< "${LAND_IAU_FHRS}"
 for ihr in "${landifhrs[@]}"; do
     hrsf=$(printf "%.1f" "$ihr")
-    soilinc_fhr_f="${soilinc_fhr_f}${dlmtr}${hrsf}"
+    landinc_fhr_f="${landinc_fhr_f}${dlmtr}${hrsf}"
     dlmtr=","
     sfiprfx="${sfiprfx}${ihr}"
 done
@@ -109,23 +109,23 @@ for imem in $(seq 1 $NMEM_REGRID); do
         COM_SOIL_ANALYSIS_MEM=$COM_ATMOS_ANALYSIS_MEM
     fi
  
-    for FHR in $soilinc_fhrs; do
-      ln -fs ${COM_SOIL_ANALYSIS_MEM}/${APREFIX_ENS}sfci0${FHR}.nc \
+    for FHR in ${landinc_reghrs}; do
+        ln -fs ${COM_SOIL_ANALYSIS_MEM}/${APREFIX_ENS}sfci0${FHR}.nc \
                 ${DATA}/enkfgdas.sfci.nc
 
-      $APRUN_REGR $REGRID_EXEC $REDOUT$PGMOUT $REDERR$PGMERR
+        ${APRUN_REGR} $REGRID_EXEC $REDOUT$PGMOUT $REDERR$PGMERR
 
-      for n in $(seq 1 $ntiles); do
-          mv sfci.tile${n}.nc  sfci0${FHR}.tile${n}.nc 
-      done
+        for n in $(seq 1 $ntiles); do
+            mv sfci.tile${n}.nc  sfci0${FHR}.tile${n}.nc 
+        done
     done
     #TODO: TZG temp fix till reg ouputs time dim
     for n in $(seq 1 $ntiles); do
         ncecat -u time ${sfiprfx}.tile${n}.nc sfc_inc.tile${n}.nc   #sfci00[369]
-	ncap2 -A -s @all="{${soilinc_fhr_f[@]}}" sfc_inc.tile${n}.nc sfc_inc.tile${n}.nc
+	ncap2 -A -s @all="{${landinc_fhr_f[@]}}" sfc_inc.tile${n}.nc sfc_inc.tile${n}.nc
 	ncap2 -O -s'time[time]=@all' sfc_inc.tile${n}.nc sfc_inc.tile${n}.nc
 
-        for FHR in $soilinc_fhrs; do
+        for FHR in ${landinc_reghrs}; do
 	    yes |cp -u ${DATA}/sfci0${FHR}.tile${n}.nc  ${COM_ATMOS_ANALYSIS_MEM}/sfci0${FHR}.tile${n}.nc
 	    rm -f ${DATA}/sfci0${FHR}.tile${n}.nc
 	done
