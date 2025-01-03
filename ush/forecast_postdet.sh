@@ -215,7 +215,7 @@ EOF
           fi
           ${NCP} "${sfc_increment_file}" "${DATA}/INPUT/sfc_inc.tile${TN}.nc"
         done
-	LAND_IAU_INC_FILES="${LAND_IAU_INC_FILES},''"   #"'sfc_inc',''"
+	#LAND_IAU_INC_FILES="${LAND_IAU_INC_FILES:-'sfc_inc'}"
 
       #else #TODO: check to make sure correct sfc inc for non-IAU
       fi

@@ -121,9 +121,9 @@ for imem in $(seq 1 $NMEM_REGRID); do
     done
     #TODO: TZG temp fix till reg ouputs time dim
     for n in $(seq 1 $ntiles); do
-        ncecat -u time ${sfiprfx}.tile${n}.nc sfc_inc.tile${n}.nc   #sfci00[369]
+        ncecat -u Time ${sfiprfx}.tile${n}.nc sfc_inc.tile${n}.nc   #sfci00[369]
 	ncap2 -A -s @all="{${landinc_fhr_f[@]}}" sfc_inc.tile${n}.nc sfc_inc.tile${n}.nc
-	ncap2 -O -s'time[time]=@all' sfc_inc.tile${n}.nc sfc_inc.tile${n}.nc
+	ncap2 -O -s'Time[Time]=@all' sfc_inc.tile${n}.nc sfc_inc.tile${n}.nc
 
         for FHR in ${landinc_reghrs}; do
 	    yes |cp -u ${DATA}/sfci0${FHR}.tile${n}.nc  ${COM_ATMOS_ANALYSIS_MEM}/sfci0${FHR}.tile${n}.nc

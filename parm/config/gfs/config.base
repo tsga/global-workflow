@@ -437,7 +437,8 @@ fi
 export GSI_SOILANAL=@GSI_SOILANAL@
 
 # Land IAU for soil temp
-export DO_LAND_IAU="@DO_LAND_IAU@" #default false--turn on for enkf fcst with
+export DO_LAND_IAU="@DO_LAND_IAU@" 
+export ONLY_LAND_IAU="YES"
 export LAND_IAU_FHRS="3,6,9"
 export LAND_IAU_DELTHRS=6
 export LAND_IAU_INC_FILES='sfc_inc',''
