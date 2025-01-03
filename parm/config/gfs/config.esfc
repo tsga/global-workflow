@@ -24,7 +24,7 @@ fi
 # set up soil analysis
 if [[ ${GSI_SOILANAL} = "YES" ]]; then
     #Land IAU no dolndinc
-    if [[ ${DO_LAND_IAU} = "YES" ]]; then
+    if [[ ${ONLY_LAND_IAU_INC} = "YES" ]]; then
         export DO_LNDINC=".false."
         export LND_SOI_FILE="NULL"
     else

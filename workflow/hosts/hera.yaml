@@ -4,11 +4,11 @@ BASE_DATA: '/scratch1/NCEPDEV/global/glopara/data'
 BASE_IC: '/scratch1/NCEPDEV/global/glopara/data/ICSDIR'
 PACKAGEROOT: '/scratch1/NCEPDEV/global/glopara/nwpara'
 COMINsyn: '/scratch1/NCEPDEV/global/glopara/com/gfs/prod/syndat'
-HOMEDIR: '/scratch1/NCEPDEV/da/${USER}'
+HOMEDIR: '/scratch1/NCEPDEV/global/${USER}'
 STMP: '/scratch1/NCEPDEV/stmp2/${USER}'
 PTMP: '/scratch1/NCEPDEV/stmp4/${USER}'
-NOSCRUB: $HOMEDIR/noscrub/
-ACCOUNT: da-cpu
+NOSCRUB: $HOMEDIR
+ACCOUNT: fv3-cpu
 SCHEDULER: slurm
 QUEUE: batch
 QUEUE_SERVICE: batch
@@ -18,10 +18,10 @@ RESERVATION: ''
 CHGRP_RSTPROD: 'YES'
 CLUSTERS: ''
 CHGRP_CMD: 'chgrp rstprod'
-HPSSARCH: 'NO'
+HPSSARCH: 'YES'
 HPSS_PROJECT: emc-global
 LOCALARCH: 'NO'
-ATARDIR: '/BMC/gsienkf/2year/${USER}/GlobalWF/${PSLOT}'
+ATARDIR: '/NCEPDEV/${HPSS_PROJECT}/1year/${USER}/${machine}/scratch/${PSLOT}'
 MAKE_NSSTBUFR: 'NO'
 MAKE_ACFTBUFR: 'NO'
 SUPPORTED_RESOLUTIONS: ['C1152', 'C768', 'C384', 'C192', 'C96', 'C48']
