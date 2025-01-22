@@ -119,10 +119,10 @@ class GFSCycledAppConfig(AppConfig):
             configs += ['postsnd']
 
         if options['do_awips']:
-            configs += ['awips']
+            configs += ['awips', 'fbwind']
 
         if options['do_wave']:
-            configs += ['waveinit', 'waveprep', 'wavepostsbs', 'wavepostpnt']
+            configs += ['waveinit', 'wavepostsbs', 'wavepostpnt']
             if options['do_wave_bnd']:
                 configs += ['wavepostbndpnt', 'wavepostbndpntbll']
             if options['do_gempak']:
@@ -138,7 +138,7 @@ class GFSCycledAppConfig(AppConfig):
         if options['do_jedisnowda']:
             configs += ['snowanl']
             if options['do_hybvar']:
-                configs += ['esnowrecen']
+                configs += ['esnowanl']
 
         if options['do_mos']:
             configs += ['mos_stn_prep', 'mos_grd_prep', 'mos_ext_stn_prep', 'mos_ext_grd_prep',
@@ -187,7 +187,7 @@ class GFSCycledAppConfig(AppConfig):
                 if options['do_jedisnowda']:
                     task_names[run] += ['snowanl']
 
-                wave_prep_tasks = ['waveinit', 'waveprep']
+                wave_prep_tasks = ['waveinit']
                 wave_bndpnt_tasks = ['wavepostbndpnt', 'wavepostbndpntbll']
                 wave_post_tasks = ['wavepostsbs', 'wavepostpnt']
 
@@ -281,12 +281,9 @@ class GFSCycledAppConfig(AppConfig):
                         task_names[run] += ['postsnd']
 
                     if options['do_gempak']:
-                        task_names[run] += ['gempak']
-                        task_names[run] += ['gempakmeta']
-                        task_names[run] += ['gempakncdcupapgif']
+                        task_names[run] += ['gempak', 'gempakmeta', 'gempakncdcupapgif']
                         if options['do_goes']:
-                            task_names[run] += ['npoess_pgrb2_0p5deg']
-                            task_names[run] += ['gempakpgrb2spec']
+                            task_names[run] += ['npoess_pgrb2_0p5deg', 'gempakpgrb2spec']
 
                     if options['do_awips']:
                         task_names[run] += ['awips_20km_1p0deg', 'fbwind']
@@ -316,8 +313,10 @@ class GFSCycledAppConfig(AppConfig):
                     task_names[run] += ['eobs', 'eupd']
                     task_names[run].append('echgres') if 'gdas' in run else 0
                     task_names[run] += ['ediag'] if options['lobsdiag_forenkf'] else ['eomg']
-                    task_names[run].append('esnowrecen') if options['do_jedisnowda'] and 'gdas' in run else 0
+                    task_names[run].append('esnowanl') if options['do_jedisnowda'] and 'gdas' in run else 0
 
-                task_names[run] += ['stage_ic', 'ecen', 'esfc', 'efcs', 'epos', 'earc', 'cleanup']
+                task_names[run].append('efcs') if 'gdas' in run else 0
+                task_names[run].append('epos') if 'gdas' in run else 0
+                task_names[run] += ['stage_ic', 'ecen', 'esfc', 'earc', 'cleanup']
 
         return task_names
