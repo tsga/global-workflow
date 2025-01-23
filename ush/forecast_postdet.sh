@@ -2,6 +2,9 @@
 
 # Disable variable not used warnings
 # shellcheck disable=SC2034
+
+ntiles=${ntiles:-6}
+
 FV3_postdet() {
   echo "SUB ${FUNCNAME[0]}: Entering for RUN = ${RUN}"
 
@@ -135,7 +138,12 @@ FV3_postdet() {
         IAU_DELTHRS=0
         IAU_INC_FILES="''"
       fi
-
+      if [[ ${DO_LAND_IAU} = "YES" ]]; then
+	DO_LAND_IAU="NO"
+        LAND_IAU_FHRS=-1
+        LAND_IAU_DELTHRS=0
+        LAND_IAU_INC_FILES="''"
+      fi
     #--------------------------------------------------------------------------
     else  # "${RERUN}" == "NO"
 
@@ -198,6 +206,24 @@ EOF
           exit 1
         fi
       done
+
+      # TZG: SFC increments
+      # sfc_inc in FV3 grid, all timesteps in one file per tile (Land IAU or not)
+      if [[ ${DO_LAND_IAU} = "YES" ]]; then
+        local TN sfc_increment_file
+        for TN in $(seq 1 $ntiles); do
+          sfc_increment_file="${COMIN_ATMOS_ANALYSIS}/sfc_inc.tile${TN}.nc"
+          if [[ ! -f ${sfc_increment_file} ]]; then
+            echo "ERROR: DO_LAND_IAU=${DO_LAND_IAU}, but missing increment file ${sfc_increment_file}"
+            echo "Abort!"
+            exit 1
+          fi
+          ${NCP} "${sfc_increment_file}" "${DATA}/INPUT/sfc_inc.tile${TN}.nc"
+        done
+	LAND_IAU_INC_FILES=${LAND_IAU_INC_FILES:-'sfc_inc'}
+
+      #else #TODO: check to make sure correct sfc inc for non-IAU
+      fi
 
     fi  # if [[ "${RERUN}" == "YES" ]]; then
     #--------------------------------------------------------------------------

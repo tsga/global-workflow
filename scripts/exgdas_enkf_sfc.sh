@@ -123,8 +123,31 @@ if [ $GSI_SOILANAL = "YES" ]; then
     export CASE_IN=${CASE_ENS}
     export CASE_OUT=${CASE_ENS}
     export OCNRES_OUT=${OCNRES}
-    export soilinc_fhrs="06"
     export NMEM_REGRID=${NMEM_ENS}
+
+    if [ $DO_LAND_IAU = "YES" ]; then
+        ifhrs=()
+        IFS=',' read -ra landifhrs <<< "${LAND_IAU_FHRS}"
+        for ihr in "${landifhrs[@]}"; do
+            hrstr=$(printf "%02d" $ihr);
+            ifhrs+=("$hrstr")
+        done
+        export landiau_fhrs="${ifhrs[@]}"
+    fi
+
+    # differentiating soilinc_fhrs and fhrs for regrid
+    # all GSI incr are regridded; not all inrements are used in soil update
+
+    ifhrs=()
+    IFS=',' read -ra landifhrs <<< "${IAUFHRS_ENKF}"  #$(echo $IAUFHRS_ENKF | sed 's/,/ /g')
+    for ihr in "${landifhrs[@]}"; do
+        hrstr=$(printf "%02d" $ihr);
+        ifhrs+=("$hrstr")
+    done
+
+    export landinc_reghrs="${ifhrs[@]}"
+
+    export soilinc_fhrs=("06")
 
     $REGRIDSH
 
@@ -134,6 +157,7 @@ export APRUNCY=${APRUN_CYCLE:-$APRUN_ESFC}
 export OMP_NUM_THREADS_CY=${NTHREADS_CYCLE:-$NTHREADS_ESFC}
 export MAX_TASKS_CY=$NMEM_ENS
 
+# ToDO TZG update this to sync with land_iau
 if [ $DOIAU = "YES" ]; then
     # Update surface restarts at beginning of window when IAU is ON
     # For now assume/hold dtfanl.nc is valid at beginning of window.
@@ -148,6 +172,7 @@ if [ $DOIAU = "YES" ]; then
             if (( smem > NMEM_ENS_MAX )); then
                smem=$((smem - NMEM_ENS_MAX))
             fi
+	    # CSD - what is this doing?
             gmemchar="mem"$(printf %03i "$smem")
             cmem=$(printf %03i $imem)
             memchar="mem$cmem"
@@ -180,6 +205,7 @@ if [ $DOIAU = "YES" ]; then
 
             if [[ ${GSI_SOILANAL} = "YES" ]]; then
                 FHR=6
+#if [ $DO_LAND_IAU = "YES" ] TODO: make sure iau updated vars are not updated again
                  ${NCP} "${COM_ATMOS_ANALYSIS_MEM}/sfci00${FHR}.tile${n}.nc" \
                    "${DATA}/soil_xainc.${cmem}" 
             fi
@@ -207,7 +233,6 @@ if [ $DOIAU = "YES" ]; then
 
             [[ ${TILE_NUM} -eq 1 ]] && mkdir -p "${COM_ATMOS_RESTART_MEM}"
             cpfs "${DATA}/fnbgso.${cmem}" "${COM_ATMOS_RESTART_MEM}/${bPDY}.${bcyc}0000.sfcanl_data.tile${n}.nc"
-
 
             if [[ ${GSI_SOILANAL} = "YES" ]]; then
                 FHR=6

@@ -649,6 +649,30 @@ cat >> input.nml <<EOF
 /
 EOF
 
+## TZG: Land IAU
+LOG_DO_LAND_IAU=.false.
+if [[ ${DO_LAND_IAU} = "YES" ]]; then
+  LOG_DO_LAND_IAU=.true.
+fi
+#TODO: check land inc file names 
+echo "" >> input.nml
+cat >> input.nml << EOF
+&land_iau_nml
+  do_land_iau=${LOG_DO_LAND_IAU}
+  land_iau_fhrs=${LAND_IAU_FHRS}
+  land_iau_delthrs=${LAND_IAU_DELTHRS}
+  land_iau_inc_files=${LAND_IAU_INC_FILES} 
+  lsoil_incr=${LSOIL_INCR}
+  land_iau_filter_increments=${LAND_IAU_FILTER_INCREMENTS:-".false."}
+  land_iau_upd_stc=${LAND_IAU_UPD_STC}
+  land_iau_upd_slc=${LAND_IAU_UPD_SLC}
+  land_iau_do_stcsmc_adjustment=${LAND_IAU_DO_STCSMC_ADJUSTMENT}
+  land_iau_min_T_increment=${LAND_IAU_MIN_T_INCREMENT}
+
+/
+EOF
+echo "" >> input.nml
+
 # Add namelist for stochastic physics options
 echo "" >> input.nml
 #if [ $MEMBER -gt 0 ]; then

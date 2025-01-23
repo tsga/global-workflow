@@ -117,6 +117,7 @@ fi
 # Collect the dates in the window to update surface restarts
 gcycle_dates=("${PDY}${cyc}")  # Always update surface restarts at middle of window
 soilinc_fhrs=("06") # increment file at middle of window has FHR=6
+# ToDO TZG update this to sync with land_iau
 if [[ "${DOIAU:-}" == "YES" ]]; then  # Update surface restarts at beginning of window
   half_window=$(( assim_freq / 2 ))
   half_fhrs=$(printf %02d $half_window)
@@ -133,7 +134,28 @@ if [ $GSI_SOILANAL = "YES" ]; then
     export CASE_IN=${CASE_ENS}
     export CASE_OUT=$CASE
     export OCNRES_OUT=$OCNRES
- 
+
+    if [ $DO_LAND_IAU = "YES" ]; then
+	ifhrs=()
+        IFS=',' read -ra landifhrs <<< "${LAND_IAU_FHRS}"
+        for ihr in "${landifhrs[@]}"; do
+            hrstr=$(printf "%02d" $ihr);
+            ifhrs+=("$hrstr")
+        done
+	export landiau_fhrs="${ifhrs[@]}"
+    fi
+
+    # differentiating soilinc_fhrs (used below) and fhrs for regrid
+    # all GSI incr are regridded; not all inrements are used in the update
+    ifhrs=()
+    IFS=',' read -ra landifhrs <<< "${IAUFHRS_ENKF}"  #$(echo $IAUFHRS_ENKF | sed 's/,/ /g')
+    for ihr in "${landifhrs[@]}"; do
+        hrstr=$(printf "%02d" $ihr);
+        ifhrs+=("$hrstr")
+    done
+
+    export landinc_reghrs="${ifhrs[@]}"
+
     $REGRIDSH
 
 fi
@@ -142,7 +164,7 @@ fi
 for hr in "${!gcycle_dates[@]}"; do
 
   gcycle_date=${gcycle_dates[hr]}
-  FHR=${FHR[hr]}
+  FHR=${soilinc_fhrs[hr]}   #${FHR[hr]} TODO check 
   echo "CSD check hours $FHR"
 
   echo "Updating surface restarts for ${gcycle_date} ..."
@@ -150,9 +172,10 @@ for hr in "${!gcycle_dates[@]}"; do
   datestr="${gcycle_date:0:8}.${gcycle_date:8:2}0000"
 
   # THIS BLOCK SPECIFIC TO NON-IAU CASE
-  if [[ ${GSI_SOILANAL} = "YES" ]]; then
+# TODO: TZG Add no land iau condition?
+  if [[ ${GSI_SOILANAL} = "YES" ]]; then   # && $DO_LAND_IAU = "NO" ]]; then
         for (( nn=1; nn <= ntiles; nn++ )); do
-        cp "${COMIN_ATMOS_ANALYSIS}/sfci00${FHR}.tile${nn}.nc" \
+        cp "${COMIN_ATMOS_ANALYSIS}/sfci0${FHR}.tile${nn}.nc" \
            "${DATA}/soil_xainc.00${nn}" 
         done
   fi
