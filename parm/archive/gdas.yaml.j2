@@ -160,6 +160,8 @@ gdas:
         {% endfor %}
     optional:
         {% if MODE == "cycled" %}
+            # always save gdas_sfcanl.log if available
+        - "logs/{{ cycle_YMDH }}/{{ RUN }}_sfcanl.log"        
             # Radiance verification (only created if there are problems)
             {% if DO_VERFRAD %}
         - "{{ COMIN_ATMOS_RADMON | relpath(ROTDIR) }}/bad_diag.{{ cycle_YMDH }}"
