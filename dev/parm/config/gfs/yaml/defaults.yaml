@@ -57,6 +57,7 @@ aeroanl:
 snowanl:
   IO_LAYOUT_X: 1
   IO_LAYOUT_Y: 1
+  ENS_SIZE: 1
 
 marinebmat:
   SOCA_INPUT_FIX_DIR: "${FIXgfs}/gdas/soca/72x35x25/soca"
