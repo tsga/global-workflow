@@ -378,7 +378,7 @@ class SnowAnalysis(Analysis):
                 'ntiles': self.task_config.ntiles,
                 'noincr_threshold': self.task_config.noincr_threshold,
                 'print_debug': self.task_config.print_debug,
-                'truncate_incr': self.task_config.truncate_incr
+                'truncate_incr': self.task_config.truncate_incr,
                 'deterministic_increment': self.task_config.deterministic_increment
             }
             nml_data = Jinja(nml_template, nml_config).render
