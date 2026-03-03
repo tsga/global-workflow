@@ -91,23 +91,25 @@ for imem in $(seq 1 "${NMEM_REGRID}"); do
             COMIN_SOIL_ANALYSIS_MEM:COM_ATMOS_ANALYSIS_TMPL
     fi
 
-    for FHR in "${soilinc_fhrs[@]}"; do
+    if [[ "${DO_LAND_IAU}" = ".false." || "${RUN}" == "gdas" || "${RUN}" == "gfs" ]]; then
+        for FHR in "${soilinc_fhrs[@]}"; do
 
-        export add_time_dim=".false."
-        export time_list="${FHR}"
+            export add_time_dim=".false."
+            export time_list="${FHR}"
 
-        rm -f "regrid.nml"
-        atparse < "${regrid_nml_tmpl}" >> "regrid.nml"
+            rm -f "regrid.nml"
+            atparse < "${regrid_nml_tmpl}" >> "regrid.nml"
 
-        cpreq "${COMIN_SOIL_ANALYSIS_MEM}/${APREFIX_ENS}sfci00${FHR}.nc" \
+            cpreq "${COMIN_SOIL_ANALYSIS_MEM}/${APREFIX_ENS}sfci00${FHR}.nc" \
                "${DATA}/enkfgdas.sfci00${FHR}.nc"
 
-        ${APRUN_REGRID} "${REGRID_EXEC}" "${REDOUT}${PGMOUT}" "${REDERR}${PGMERR}"
+            ${APRUN_REGRID} "${REGRID_EXEC}" "${REDOUT}${PGMOUT}" "${REDERR}${PGMERR}"
 
-        for n in $(seq 1 "${ntiles}"); do
-            cpfs "${DATA}/sfci.tile${n}.nc"  "${COMOUT_ATMOS_ANALYSIS_MEM}/sfci00${FHR}.tile${n}.nc"
+            for n in $(seq 1 "${ntiles}"); do
+                cpfs "${DATA}/sfci.tile${n}.nc"  "${COMOUT_ATMOS_ANALYSIS_MEM}/sfci00${FHR}.tile${n}.nc"
+            done
         done
-    done 
+    fi
 
     if [[ "${DO_LAND_IAU}" = ".true." ]]; then 
 
@@ -123,19 +125,17 @@ for imem in $(seq 1 "${NMEM_REGRID}"); do
         done
         
         export pgm="${REGRID_EXEC}"
-	      ${APRUN_REGRID} "${REGRID_EXEC}" "${REDOUT}${PGMOUT}" "${REDERR}${PGMERR}"
-	      export err=$?
-	      if [[ ${err} -ne 0 ]]; then
-	          err_exit "${pgm} failed, ABORT!"
-	      fi
+        ${APRUN_REGRID} "${REGRID_EXEC}" "${REDOUT}${PGMOUT}" "${REDERR}${PGMERR}"
+        export err=$?
+        if [[ ${err} -ne 0 ]]; then
+            err_exit "${pgm} failed, ABORT!"
+        fi
 
         for n in $(seq 1 "${ntiles}"); do
             cpfs "${DATA}/sfci.tile${n}.nc"  "${COMOUT_ATMOS_ANALYSIS_MEM}/sfc_inc.tile${n}.nc"
         done
-	    
     fi
 
 done
 
 exit 0
-
