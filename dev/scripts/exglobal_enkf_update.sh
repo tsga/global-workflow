@@ -116,7 +116,7 @@ cpreq "${COMIN_ATMOS_ANALYSIS_STAT}/${ABIASe}" "satbias_in"
 ################################################################################
 # Ensemble guess, observational data and analyses/increments
 
-flist="${CNVSTAT} ${OZNSTAT} ${RADSTAT}"
+flist="${CNVSTAT}"  # ${OZNSTAT} ${RADSTAT}"
 for ftype in ${flist}; do
     fname="${COMIN_ATMOS_ANALYSIS_STAT}/${ftype}"
     tar -xvf "${fname}"
@@ -142,10 +142,10 @@ for imem in $(seq 1 "${NMEM_ENS}"); do
     for FHR in ${nfhrs}; do
         cpreq "${COMIN_ATMOS_HISTORY_MEM_PREV}/${GPREFIX}atm.f00${FHR}${ENKF_SUFFIX}.nc" \
             "sfg_${PDY}${cyc}_fhr0${FHR}_${memchar}"
-        if [[ "${hofx_2m_sfcfile}" == ".true." ]]; then
+#        if [[ "${hofx_2m_sfcfile}" == ".true." ]]; then
             cpreq "${COMIN_ATMOS_HISTORY_MEM_PREV}/${GPREFIX}sfc.f00${FHR}${ENKF_SUFFIX}.nc" \
                 "bfg_${PDY}${cyc}_fhr0${FHR}_${memchar}"
-        fi
+#        fi
         if [[ "${cnvw_option}" == ".true." ]]; then
             cpreq "${COMIN_ATMOS_HISTORY_MEM_PREV}/${GPREFIX}sfc.f00${FHR}.nc" \
                 "sfgsfc_${PDY}${cyc}_fhr0${FHR}_${memchar}"
@@ -182,7 +182,7 @@ for FHR in ${nfhrs}; do
             "sfcincr_${PDY}${cyc}_fhr0${FHR}_ensmean"
     fi
 done
-
+write_spread_diag=.true.
 ################################################################################
 # Create global_enkf namelist
 cat > enkf.nml << EOFnml

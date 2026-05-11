@@ -395,7 +395,7 @@ FV3_namelists() {
     local FNSOCC="'${FNSOCC}'"
     local FNSMCC="'${FNSMCC}'"
     local FNMSKH="'${FNMSKH}'"
-    local FNTSFA="'${FNTSFA}'"
+    local FNTSFA="'${FNTSFA:-}'"
     local FNACNA="'${FNACNA:-}'"
     local FNSNOA="'${FNSNOA:-}'"
     local FNVMNC="'${FNVMNC:-}'"
@@ -421,7 +421,7 @@ FV3_namelists() {
     local FVMXL=${FvmxL:+\'${FvmxL}\'}${FvmxL:-99999}
     local FSLPL=${FSLPL:+\'${FSLPL}\'}${FSLPL:-99999}
     local FABSL=${FABSL:+\'${FABSL}\'}${FABSL:-99999}
-    local FNTSFA="'${FNTSFA:-}'"
+#    local FNTSFA="'${FNTSFA:-}'"
 
     #fv_grid_nml options
 

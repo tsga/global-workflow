@@ -50,8 +50,11 @@ export hofx_2m_sfcfile=".true."
 if [[ ${DO_GSISOILDA} = "YES" ]]; then
     export reducedgrid=".false." # not possible for sfc analysis, Jeff Whitaker says it's not useful anyway
     # NOTE: convinfo here will be over-written by date-specific files below.
-    export CONVINFO=${FIXgfs}/gsi/global_convinfo_2mObs.txt
+    export CONVINFO="{{ CONVINFO }}"  #${FIXgfs}/gsi/global_convinfo_2mObs.txt}
     export ANAVINFO=${FIXgfs}/gsi/global_anavinfo_soilanal.l127.txt
+
+    # only assimilate conv
+    export LND_ASSM_SAT="{{ LND_ASSM_SAT }}"   #NO
 fi
 
 # Use experimental dumps in EMC GFS v16 parallels

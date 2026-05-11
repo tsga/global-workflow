@@ -124,7 +124,7 @@ else
     fi
 fi
 
-if [[ "${DONST}" == "YES" ]]; then
+if [[ "${DONST}" == "YES" && "${NST_GSI}"  > 0 ]]; then
     export NST_FILE=${NST_FILE:-${COMIN_ATMOS_ANALYSIS_DET}/${APREFIX}increment.dtf.i006.nc}
 else
     export NST_FILE="NULL"
@@ -283,7 +283,7 @@ if [[ "${DOSFCANL_ENKF}" == "YES" ]]; then
             cpreq "${FIXgfs}/orog/${CASE}/${CASE}.mx${OCNRES}_oro_data.tile${n}.nc" "${DATA}/fnorog.${cmem}"
 
             if [[ "${DO_GSISOILDA}" == "YES" ]] && [[ "${GCYCLE_DO_SOILINCR}" == ".true." ]]; then
-                cpreq "${COMIN_ATMOS_ANALYSIS_MEM}/${APREFIX}increment.sfc.i00${LFHR}.tile${n}.nc" \
+                cpreq "${COMIN_ATMOS_ANALYSIS_MEM}/increment.sfc.i00${LFHR}.tile${n}.nc" \
                     "${DATA}/soil_xainc.${cmem}"
             fi
         done

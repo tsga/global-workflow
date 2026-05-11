@@ -261,9 +261,13 @@ class AnalysisStats(Analysis):
         for obspace in conv_obsspaces:
             logger.info(f"Combining conventional GSI IODA files for obspace {obspace}")
             FileList = glob.glob(os.path.join(output_dir_path, f"{obspace}_*_gsi_*.nc"))
-            timestamp = self.task_config.current_cycle.strftime('%Y%m%d%H')
-            combined_outfile = os.path.join(output_dir_path, f"{obspace}_gsi_{timestamp}.nc")
-            gsios.combine_obsspace(FileList, combined_outfile, False)
+            if FileList:
+                timestamp = self.task_config.current_cycle.strftime('%Y%m%d%H')
+                combined_outfile = os.path.join(output_dir_path, f"{obspace}_gsi_{timestamp}.nc")
+                gsios.combine_obsspace(FileList, combined_outfile, False)
+            else:
+                logger.warning(f"No IODA files found for obspace {obspace}")
+                logger.warning("Skipping this obsspace ...")
 
         # Tar up the ioda files
         iodastatzipfile = os.path.join(self.task_config.DATA, 'atmos_gsi', 'atmos_gsi_ioda',
