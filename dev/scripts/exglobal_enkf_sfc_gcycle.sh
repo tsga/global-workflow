@@ -122,7 +122,7 @@ else
     fi
 fi
 
-if [[ "${DONST}" == "YES" ]]; then
+if [[ "${DONST}" == "YES" && "${NST_GSI}" > 0 ]]; then
     export NST_FILE=${NST_FILE:-${COMIN_ATMOS_ANALYSIS_DET}/${APREFIX}increment.dtf.i006.nc}
 else
     export NST_FILE="NULL"

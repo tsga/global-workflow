@@ -469,72 +469,75 @@ esac
 # Observational data
 ${NLN} "${PREPQC}" prepbufr
 ${NLN} "${PREPQCPF}" prepbufr_profl
-${NLN} "${SATWND}" satwndbufr
-${NLN} "${OSCATBF}" oscatbufr
-${NLN} "${RAPIDSCATBF}" rapidscatbufr
-${NLN} "${GSNDBF}" gsndrbufr
-${NLN} "${GSNDBF1}" gsnd1bufr
-${NLN} "${B1MSU}" msubufr
-${NLN} "${B1AMUA}" amsuabufr
-${NLN} "${B1AMUB}" amsubbufr
-${NLN} "${B1MHS}" mhsbufr
-${NLN} "${B1HRS2}" hirs2bufr
-${NLN} "${B1HRS3}" hirs3bufr
-${NLN} "${B1HRS4}" hirs4bufr
-${NLN} "${ESAMUA}" amsuabufrears
-${NLN} "${ESAMUB}" amsubbufrears
-#${NLN}  "${ESMHS}"           mhsbufrears
-${NLN} "${AMUADB}" amsuabufr_db
-${NLN} "${AMUBDB}" amsubbufr_db
-#${NLN}  "${MHSDB}"           mhsbufr_db
-${NLN} "${SBUVBF}" sbuvbufr
-${NLN} "${OMPSNPBF}" ompsnpbufr
-${NLN} "${OMPSLPBF}" ompslpbufr
-${NLN} "${OMPSTCBF}" ompstcbufr
-${NLN} "${GOMEBF}" gomebufr
-${NLN} "${OMIBF}" omibufr
-${NLN} "${MLSBF}" mlsbufr
-${NLN} "${SMIPCP}" ssmirrbufr
-${NLN} "${TMIPCP}" tmirrbufr
-${NLN} "${AIRSBF}" airsbufr
-${NLN} "${IASIBF}" iasibufr
-${NLN} "${ESIASI}" iasibufrears
-${NLN} "${IASIDB}" iasibufr_db
-${NLN} "${AMSREBF}" amsrebufr
-${NLN} "${AMSR2BF}" amsr2bufr
-${NLN} "${GMI1CRBF}" gmibufr
-${NLN} "${SAPHIRBF}" saphirbufr
-${NLN} "${SEVIRIBF}" seviribufr
-${NLN} "${CRISBF}" crisbufr
-${NLN} "${ESCRIS}" crisbufrears
-${NLN} "${CRISDB}" crisbufr_db
-${NLN} "${CRISFSBF}" crisfsbufr
-${NLN} "${ESCRISFS}" crisfsbufrears
-${NLN} "${CRISFSDB}" crisfsbufr_db
-${NLN} "${ATMSBF}" atmsbufr
-${NLN} "${ESATMS}" atmsbufrears
-${NLN} "${ATMSDB}" atmsbufr_db
-${NLN} "${SSMITBF}" ssmitbufr
-${NLN} "${SSMISBF}" ssmisbufr
-${NLN} "${GPSROBF}" gpsrobufr
-${NLN} "${TCVITL}" tcvitl
-${NLN} "${B1AVHAM}" avhambufr
-${NLN} "${B1AVHPM}" avhpmbufr
-${NLN} "${AHIBF}" ahibufr
-${NLN} "${ABIBF}" abibufr
-${NLN} "${HDOB}" hdobbufr
-${NLN} "${SSTVIIRS}" sstviirs
-${NLN} "${SAILDRONE}" sdbufr
-${NLN} "${GSBBF}" wbbufr
 
-# NASA ozone (netcdf) from NNJA
-${NLN} "${OMIEFFNC}" omieffnc
-${NLN} "${OMPSNMEFFNC}" ompsnmeffnc
-${NLN} "${OMPSNPNC}" ompsnpnc
-${NLN} "${OMPSLPNC}" ompslpnc
-${NLN} "${MLS55NC}" mls55nc
-# NASA airs aqua amsua (bufr) from NNJA
-${NLN} "${AQUAAMUA}" aquabufr
+if [[ "${LND_ASSM_SAT:-"NO"}" == "YES" ]]; then
+    ${NLN} "${SATWND}" satwndbufr
+    ${NLN} "${OSCATBF}" oscatbufr
+    ${NLN} "${RAPIDSCATBF}" rapidscatbufr
+    ${NLN} "${GSNDBF}" gsndrbufr
+    ${NLN} "${GSNDBF1}" gsnd1bufr
+    ${NLN} "${B1MSU}" msubufr
+    ${NLN} "${B1AMUA}" amsuabufr
+    ${NLN} "${B1AMUB}" amsubbufr
+    ${NLN} "${B1MHS}" mhsbufr
+    ${NLN} "${B1HRS2}" hirs2bufr
+    ${NLN} "${B1HRS3}" hirs3bufr
+    ${NLN} "${B1HRS4}" hirs4bufr
+    ${NLN} "${ESAMUA}" amsuabufrears
+    ${NLN} "${ESAMUB}" amsubbufrears
+    #${NLN}  "${ESMHS}"           mhsbufrears
+    ${NLN} "${AMUADB}" amsuabufr_db
+    ${NLN} "${AMUBDB}" amsubbufr_db
+    #${NLN}  "${MHSDB}"           mhsbufr_db
+    ${NLN} "${SBUVBF}" sbuvbufr
+    ${NLN} "${OMPSNPBF}" ompsnpbufr
+    ${NLN} "${OMPSLPBF}" ompslpbufr
+    ${NLN} "${OMPSTCBF}" ompstcbufr
+    ${NLN} "${GOMEBF}" gomebufr
+    ${NLN} "${OMIBF}" omibufr
+    ${NLN} "${MLSBF}" mlsbufr
+    ${NLN} "${SMIPCP}" ssmirrbufr
+    ${NLN} "${TMIPCP}" tmirrbufr
+    ${NLN} "${AIRSBF}" airsbufr
+    ${NLN} "${IASIBF}" iasibufr
+    ${NLN} "${ESIASI}" iasibufrears
+    ${NLN} "${IASIDB}" iasibufr_db
+    ${NLN} "${AMSREBF}" amsrebufr
+    ${NLN} "${AMSR2BF}" amsr2bufr
+    ${NLN} "${GMI1CRBF}" gmibufr
+    ${NLN} "${SAPHIRBF}" saphirbufr
+    ${NLN} "${SEVIRIBF}" seviribufr
+    ${NLN} "${CRISBF}" crisbufr
+    ${NLN} "${ESCRIS}" crisbufrears
+    ${NLN} "${CRISDB}" crisbufr_db
+    ${NLN} "${CRISFSBF}" crisfsbufr
+    ${NLN} "${ESCRISFS}" crisfsbufrears
+    ${NLN} "${CRISFSDB}" crisfsbufr_db
+    ${NLN} "${ATMSBF}" atmsbufr
+    ${NLN} "${ESATMS}" atmsbufrears
+    ${NLN} "${ATMSDB}" atmsbufr_db
+    ${NLN} "${SSMITBF}" ssmitbufr
+    ${NLN} "${SSMISBF}" ssmisbufr
+    ${NLN} "${GPSROBF}" gpsrobufr
+    ${NLN} "${TCVITL}" tcvitl
+    ${NLN} "${B1AVHAM}" avhambufr
+    ${NLN} "${B1AVHPM}" avhpmbufr
+    ${NLN} "${AHIBF}" ahibufr
+    ${NLN} "${ABIBF}" abibufr
+    ${NLN} "${HDOB}" hdobbufr
+    ${NLN} "${SSTVIIRS}" sstviirs
+    ${NLN} "${SAILDRONE}" sdbufr
+    ${NLN} "${GSBBF}" wbbufr
+    
+    # NASA ozone (netcdf) from NNJA
+    ${NLN} "${OMIEFFNC}" omieffnc
+    ${NLN} "${OMPSNMEFFNC}" ompsnmeffnc
+    ${NLN} "${OMPSNPNC}" ompsnpnc
+    ${NLN} "${OMPSLPNC}" ompslpnc
+    ${NLN} "${MLS55NC}" mls55nc
+    # NASA airs aqua amsua (bufr) from NNJA
+    ${NLN} "${AQUAAMUA}" aquabufr
+fi
 
 if [[ "${DONST}" == "YES" ]]; then
     ${NLN} "${NSSTBF}" nsstbufr
@@ -548,39 +551,39 @@ cpreq "${GBIASAIR}" aircftbias_in
 
 ##############################################################
 # Required model guess files
-${NLN} "${ATMG03}" sigf03
+#${NLN} "${ATMG03}" sigf03
 ${NLN} "${ATMGES}" sigf06
-${NLN} "${ATMG09}" sigf09
+#${NLN} "${ATMG09}" sigf09
 
-${NLN} "${SFCG03}" sfcf03
+#${NLN} "${SFCG03}" sfcf03
 ${NLN} "${SFCGES}" sfcf06
-${NLN} "${SFCG09}" sfcf09
-
-if [[ -f "${ATMG04}" ]]; then
-    ${NLN} "${ATMG04}" sigf04
-fi
-if [[ -f "${ATMG05}" ]]; then
-    ${NLN} "${ATMG05}" sigf05
-fi
-if [[ -f "${ATMG07}" ]]; then
-    ${NLN} "${ATMG07}" sigf07
-fi
-if [[ -f "${ATMG08}" ]]; then
-    ${NLN} "${ATMG08}" sigf08
-fi
-
-if [[ -f "${SFCG04}" ]]; then
-    ${NLN} "${SFCG04}" sfcf04
-fi
-if [[ -f "${SFCG05}" ]]; then
-    ${NLN} "${SFCG05}" sfcf05
-fi
-if [[ -f "${SFCG07}" ]]; then
-    ${NLN} "${SFCG07}" sfcf07
-fi
-if [[ -f "${SFCG08}" ]]; then
-    ${NLN} "${SFCG08}" sfcf08
-fi
+#${NLN} "${SFCG09}" sfcf09
+#
+#if [[ -f "${ATMG04}" ]]; then
+#    ${NLN} "${ATMG04}" sigf04
+#fi
+#if [[ -f "${ATMG05}" ]]; then
+#    ${NLN} "${ATMG05}" sigf05
+#fi
+#if [[ -f "${ATMG07}" ]]; then
+#    ${NLN} "${ATMG07}" sigf07
+#fi
+#if [[ -f "${ATMG08}" ]]; then
+#    ${NLN} "${ATMG08}" sigf08
+#fi
+#
+#if [[ -f "${SFCG04}" ]]; then
+#    ${NLN} "${SFCG04}" sfcf04
+#fi
+#if [[ -f "${SFCG05}" ]]; then
+#    ${NLN} "${SFCG05}" sfcf05
+#fi
+#if [[ -f "${SFCG07}" ]]; then
+#    ${NLN} "${SFCG07}" sfcf07
+#fi
+#if [[ -f "${SFCG08}" ]]; then
+#    ${NLN} "${SFCG08}" sfcf08
+#fi
 
 if [[ "${DOHYBVAR}" == "YES" ]]; then
 
